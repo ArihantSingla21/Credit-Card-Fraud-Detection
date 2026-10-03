@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#101b19" />
+    <meta name="description" content="An evidence-aware review of the credit card fraud detection notebook." />
+    <title>Fraud Signals | Analysis Brief</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Project navigation">
+        <a class="brand" href="#overview" aria-label="Fraud Signals overview">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span><strong>FIELDNOTE</strong><small>RISK INTELLIGENCE / 01</small></span>
+        </a>
+        <div class="side-label">ANALYSIS</div>
+        <nav class="side-nav">
+          <a class="nav-link is-active" href="#overview"><span class="nav-index">01</span>Overview</a>
+          <a class="nav-link" href="#signals"><span class="nav-index">02</span>Signals & findings</a>
+          <a class="nav-link" href="#models"><span class="nav-index">03</span>Model review</a>
+          <a class="nav-link" href="#method"><span class="nav-index">04</span>Method & caveats</a>
+        </nav>
+        <div class="sidebar-bottom">
+          <span class="status-dot"></span>
+          <span>NOTEBOOK REVIEW</span>
+          <small>STATIC BRIEF · 03 OCT 2026</small>
+        </div>
+      </aside>
+
+      <main id="overview" class="main-content">
+        <header class="topbar">
+          <div class="crumb">RESEARCH / FRAUD DETECTION <span>/</span> ANALYSIS BRIEF</div>
+          <button class="print-button" id="printBrief" type="button" title="Print this analysis brief"><span aria-hidden="true">↗</span> Print brief</button>
+        </header>
+
+        <section class="intro-section">
+          <div class="intro-copy">
+            <p class="eyebrow"><span class="eyebrow-line"></span> TRANSACTION RISK · EUROPE · 2013</p>
+            <h1>Fraud is rare.<br /><em>Missing it isn't.</em></h1>
+            <p class="intro-description">A guided read of the notebook’s data, modeling choices, and evaluation claims. The emphasis is on what the analysis says, and what it can actually support.</p>
+          </div>
+          <div class="intro-stamp" aria-label="Dataset period: two days"><span>OBSERVATION WINDOW</span><strong>02</strong><small>DAYS · SEP 2013</small></div>
+        </section>
+
+        <section class="metric-grid" aria-label="Dataset overview">
+          <article class="metric metric-total"><span class="metric-label">TRANSACTIONS</span><strong>284,807</strong><span class="metric-note">Two days of card activity</span></article>
+          <article class="metric metric-fraud"><span class="metric-label">LABELED FRAUD</span><strong>492</strong><span class="metric-note">Positive class · Class = 1</span></article>
+          <article class="metric metric-rate"><span class="metric-label">FRAUD SHARE</span><strong>0.173<span>%</span></strong><span class="metric-note">About 1 in 578 transactions</span></article>
+          <article class="metric metric-features"><span class="metric-label">INPUT COLUMNS</span><strong>30</strong><span class="metric-note">28 PCA features + Time + Amount</span></article>
+        </section>
+
+        <section class="section-block balance-section" aria-labelledby="balance-title">
+          <div class="section-heading"><div><p class="section-kicker">01 / THE BASE RATE</p><h2 id="balance-title">A needle in the transaction stream</h2></div><span class="source-tag">DATASET DESCRIPTION</span></div>
+          <div class="balance-layout">
+            <div class="chart-panel">
+              <div class="chart-header"><div><strong>Class distribution</strong><small>Original dataset · count</small></div><span class="chart-total">n = 284,807</span></div>
+              <div class="chart-wrap"><canvas id="classBalanceChart" role="img" aria-label="Bar chart comparing 284,315 legitimate transactions with 492 fraud transactions"></canvas></div>
+              <div class="chart-legend"><span><i class="legend-swatch legitimate"></i> Legitimate <b>284,315</b></span><span><i class="legend-swatch fraud"></i> Fraud <b>492</b></span></div>
+              <div class="chart-fallback" id="chartFallback" hidden><div class="fallback-row"><span>Legitimate</span><b>284,315</b></div><div class="fallback-track"><i></i></div><div class="fallback-row"><span>Fraud</span><b>492</b></div><div class="fallback-track fraud-track"><i></i></div></div>
+            </div>
+            <aside class="callout-panel"><span class="callout-number">578:1</span><p class="callout-title">Legitimate transactions for every fraud case</p><p class="callout-body">A model can appear highly accurate by mostly predicting “legitimate.” For this problem, fraud recall and the false-negative count deserve more attention than accuracy alone.</p><div class="callout-rule"><span>READOUT</span><b>Recall before accuracy</b></div></aside>
+          </div>
+        </section>
+
+        <section id="signals" class="section-block" aria-labelledby="signals-title">
+          <div class="section-heading"><div><p class="section-kicker">02 / EXPLORATORY ANALYSIS</p><h2 id="signals-title">What the notebook noticed</h2></div>
+            <div class="evidence-toggle" role="group" aria-label="Choose evidence view"><button class="toggle-button is-selected" type="button" data-evidence="notebook" aria-pressed="true">Notebook notes</button><button class="toggle-button" type="button" data-evidence="audit" aria-pressed="false">Review lens</button></div>
+          </div>
+          <div class="finding-grid">
+            <article class="finding finding-amount" data-evidence-panel="notebook"><div class="finding-top"><span class="finding-index">A</span><span class="finding-type">AMOUNT</span></div><h3>Most activity sits at smaller amounts</h3><p>The notebook describes amounts as concentrated in the lower range, and reports that few transactions exceed 10,000.</p><span class="finding-foot">BOX PLOT · AMOUNT × CLASS</span></article>
+            <article class="finding finding-time" data-evidence-panel="notebook"><div class="finding-top"><span class="finding-index">B</span><span class="finding-type">TIME</span></div><h3>Activity changes across the day</h3><p>The notebook describes a bimodal transaction-time distribution and says fraud appears more evenly spread by hour.</p><span class="finding-foot">ELAPSED SECONDS · 2-DAY WINDOW</span></article>
+            <article class="finding finding-features" data-evidence-panel="notebook"><div class="finding-top"><span class="finding-index">C</span><span class="finding-type">PCA FEATURES</span></div><h3>Several components track the label</h3><p>Its balanced-sample correlation discussion calls V4 and V11 positive, and V10, V12, and V14 negative.</p><span class="finding-foot">CORRELATION ≠ CAUSATION</span></article>
+            <article class="finding audit-finding" data-evidence-panel="audit" hidden><div class="finding-top"><span class="finding-index">!</span><span class="finding-type">THRESHOLD</span></div><h3>The 10,000 filter changes the population</h3><p>The notebook drops every row with Amount ≥ 10,000. High-value legitimate cases are not automatically noise; report their count and justify exclusions before training.</p><span class="finding-foot">POTENTIAL SELECTION BIAS</span></article>
+            <article class="finding audit-finding" data-evidence-panel="audit" hidden><div class="finding-top"><span class="finding-index">!</span><span class="finding-type">TIME FEATURE</span></div><h3>“Time” is elapsed time, not clock time</h3><p>Time_hour is derived modulo 24 from seconds since the first record. The dataset spans two days, so that transformation merges both days’ same-hour activity.</p><span class="finding-foot">INTERPRETATION LIMIT</span></article>
+            <article class="finding audit-finding" data-evidence-panel="audit" hidden><div class="finding-top"><span class="finding-index">!</span><span class="finding-type">CORRELATION</span></div><h3>Resampling affects what correlation shows</h3><p>Balancing can help reveal patterns visually, but correlations calculated on an undersample need not represent the original transaction population.</p><span class="finding-foot">SAMPLE-DEPENDENT RESULT</span></article>
+          </div>
+          <p class="evidence-note" id="evidenceNote">These are findings as stated in the notebook narrative, not freshly recomputed results. The CSV is not included in this project folder.</p>
+        </section>
+
+        <section id="models" class="section-block model-section" aria-labelledby="models-title">
+          <div class="section-heading"><div><p class="section-kicker">03 / MODEL REVIEW</p><h2 id="models-title">Four candidates, mixed signals</h2></div><span class="source-tag source-tag-warning">QUALITATIVE CLAIMS ONLY</span></div>
+          <div class="model-table-wrap"><table class="model-table"><thead><tr><th>MODEL</th><th>ROLE IN NOTEBOOK</th><th>NOTEBOOK’S REPORTED READ</th><th>CONFIDENCE</th></tr></thead>
+            <tbody>
+              <tr><td><span class="model-name">Logistic regression</span></td><td>Linear baseline</td><td>Described as strong on cross-validation of the balanced sample</td><td><span class="confidence-tag">RECHECK</span></td></tr>
+              <tr><td><span class="model-name">K-nearest neighbors</span></td><td>Neighborhood baseline</td><td>Compared with the other candidates</td><td><span class="confidence-tag confidence-muted">NO CLEAR WIN</span></td></tr>
+              <tr><td><span class="model-name">Support vector classifier</span></td><td>Margin-based classifier</td><td>Notebook later claims best ROC-AUC and fewest fraud false negatives on the original test fold</td><td><span class="confidence-tag">RECHECK</span></td></tr>
+              <tr><td><span class="model-name">Decision tree</span></td><td>Nonlinear baseline</td><td>Compared and tuned with a small parameter grid</td><td><span class="confidence-tag confidence-muted">NO CLEAR WIN</span></td></tr>
+            </tbody>
+          </table></div>
+          <div class="model-caveat"><span class="caveat-mark">!</span><p><strong>Do not treat these as final scores.</strong> The notebook’s prose gives conflicting winners, and its ROC-AUC calls use hard class predictions rather than probability or decision scores. No numeric result is asserted here.</p></div>
+        </section>
+
+        <section id="method" class="section-block method-section" aria-labelledby="method-title">
+          <div class="section-heading"><div><p class="section-kicker">04 / PIPELINE & VALIDITY</p><h2 id="method-title">The analysis path</h2></div><span class="source-tag">AS IMPLEMENTED IN NOTEBOOK</span></div>
+          <div class="pipeline" aria-label="Analysis workflow">
+            <div class="pipeline-step"><span>01</span><b>Inspect</b><small>EDA + plots</small></div><i class="pipeline-arrow" aria-hidden="true">→</i>
+            <div class="pipeline-step"><span>02</span><b>Transform</b><small>Robust-scale amount</small></div><i class="pipeline-arrow" aria-hidden="true">→</i>
+            <div class="pipeline-step"><span>03</span><b>Undersample</b><small>492 per class</small></div><i class="pipeline-arrow" aria-hidden="true">→</i>
+            <div class="pipeline-step"><span>04</span><b>Fit & tune</b><small>4 classifiers</small></div><i class="pipeline-arrow" aria-hidden="true">→</i>
+            <div class="pipeline-step"><span>05</span><b>Evaluate</b><small>Balanced + original fold</small></div>
+          </div>
+          <div class="audit-list">
+            <article><span class="audit-id">A1</span><div><h3>Fit preprocessing inside each training fold</h3><p>RobustScaler is fitted before the train/test split in this notebook. Fit it on training data only, ideally within a scikit-learn Pipeline, to avoid information leakage.</p></div></article>
+            <article><span class="audit-id">A2</span><div><h3>Keep the natural class ratio out of training resampling</h3><p>Undersampling should happen only within training folds. Preserve an untouched, representative test set for estimating real-world precision, recall, and alert volume.</p></div></article>
+            <article><span class="audit-id">A3</span><div><h3>Use scores for ROC-AUC and stratify splits</h3><p>Use predict_proba or decision_function for ROC-AUC, and use stratified splits so the rare positive class is represented consistently.</p></div></article>
+          </div>
+        </section>
+
+        <footer class="page-footer"><span>FIELDNOTE <b>·</b> CREDIT CARD FRAUD DETECTION</span><span>Source context: project notebook and README · Dataset attributed there to Kaggle / ULB</span></footer>
+      </main>
+    </div>
+  </body>
+</html>
